@@ -166,12 +166,12 @@ def editarDiciplinas(nomeProfessor, listasEdicoes = []):
                 if resposta == '3':
                     novoSemestre = input('Digite o novo semestre desejado: ')
                 if resposta == '4':
-                    #apagarDiciplina(nomeProfesor, nomeDiciplina)
-                    pass
+                    apagarDiciplina(nomeProfessor, nomeDiciplina)
+                    break
                 if resposta == '5':
                     novaLinha = [f'{nomeDiciplina},{novoCodigo},{novoAno},{novoSemestre}']
+                    listasEdicoes += novaLinha
                     break
-            listasEdicoes += novaLinha
     except FileNotFoundError:
         with open(f'diciplinas{nomeProfessor}.txt', 'w'):
             print('Você não possui nenhuma diciplina cadastrada.')
@@ -209,7 +209,21 @@ def editarDiciplinas(nomeProfessor, listasEdicoes = []):
         print('arquivo editado com sucesso!')
         return
 
-
+def apagarDiciplina(nomeProfessor, nomeDiciplina):
+    arquivo = open(f'diciplinas{nomeProfessor}.txt', 'r')
+    leitura = arquivo.read()
+    novoArquivo = ''
+    for linha in leitura.split('\n'):
+        if nomeDiciplina == linha.split(',')[0]:
+            novoArquivo = novoArquivo
+        else:
+            novoArquivo += f'{linha}\n'
+    arquivo.close()
+    arquivo = open(f'diciplinas{nomeProfessor}.txt', 'w')
+    arquivo.write(novoArquivo)
+    print('arquivo editado com sucesso!')
+    return
+    
 def listarDiciplinas(nomeProfessor):
     try:
         arquivo = open(f'diciplinas{nomeProfessor}.txt','r')
