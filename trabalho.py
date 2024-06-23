@@ -86,37 +86,41 @@ def login(path = str(os.getcwd())):
         
 
 
-def menuDiciplina(nomeProfessor):
-    criarDiciplina = 'n'
-    print('1- Criar diciplina')
-    print('2- editar diciplinas')
-    print('3- Criar turmas')
-    print('4- editar turmas')
-    resposta = input('Digite o número da ação desejada: ')
-    if resposta == '1':
-        CriarDiciplinas(nomeProfessor)
-    if resposta == '2':
-        editarDiciplinas(nomeProfessor, [])
+def menuDiciplina(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas):
+    while True:
+        criarDiciplina = 'n'
+        print('1- Criar diciplina')
+        print('2- editar diciplinas')
+        print('3- Criar turmas')
+        print('4- editar turmas')
+        print('5- salvar e sair')
+        resposta = input('Digite o número da ação desejada: ')
+        if resposta == '1':
+            nomeDasdiciplinas, DadosDasDiciplinas = CriarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas)
+        if resposta == '2':
+            nomeDasdiciplinas, DadosDasDiciplinas = editarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas, [])
+        if resposta == '3':
+            #CriarTurmas(nomeProfessor, nomeDasdiciplinas)
+            pass
+        if resposta == '5':
+            salvarArquivosDiciplinas(nomeProfessor, DadosDasDiciplinas)
+            break
+def salvarArquivosDiciplinas(nomeProfessor, DadosDasDiciplinas):
+    arquivo = open(f'diciplinas{nomeProfessor}.txt', 'w')
+    for linha in DadosDasDiciplinas:
+        arquivo.write(linha + '\n')        
+#def CriarTurmas(nomeProfessor, nomeDasdiciplinas):
+    
         
 
-def CriarDiciplinas(nomeProfessor):
+def CriarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas):
     auxCriarDiciplina = 'n'
     while auxCriarDiciplina == 'n':
             nomeDiciplina = input('Digite o nome da diciplina que deseja criar')
-            try:
-                arquivoDiciplinas = open(f'diciplinas{nomeProfessor}.txt', 'r+')
-            except FileNotFoundError:
-                arquivoDiciplinas = open(f'diciplinas{nomeProfessor}.txt', 'w')
-                arquivoDiciplinas.close()
-                arquivoDiciplinas = open(f'diciplinas{nomeProfessor}.txt', 'r+')
-            leitura = arquivoDiciplinas.read()
-            if nomeDiciplina in leitura:
-                for linha in leitura.split('\n'):
-                    #for nome in linha.split(','):
-                    if nomeDiciplina == linha.split(',')[0]:
-                        auxCriarDiciplina = input('Diciplina ja existente deseja voltar? s/n: ')
-                        if auxCriarDiciplina != 's':
-                            break
+            if nomeDiciplina in nomeDasdiciplinas:
+                auxCriarDiciplina = input('Diciplina ja existente deseja voltar? s/n: ')
+                if auxCriarDiciplina != 's':
+                    break
             else:
                 print('Você deve adicionar um código e indicar o ano e o semestre em que esta diciplina está sendo cursada')
                 codigoDiciplina = input('Digite o código da diciplina')
@@ -131,113 +135,111 @@ def CriarDiciplinas(nomeProfessor):
                         break
                     except ValueError:
                         print('O valor do ano e do semestre deve ser um número inteiro digite novamente')
-                arquivoDiciplinas.write(nomeDiciplina + ',' + codigoDiciplina + ',' + anoDiciplina + ',' + semestreDiciplina + '\n')
+                nomeDasdiciplinas += (nomeDiciplina,)
+                DadosDasDiciplinas +=(nomeDiciplina + ',' + codigoDiciplina + ',' + anoDiciplina + ',' + semestreDiciplina + '\n',)
                 print('Diciplina criada com sucesso')
                 auxCriarDiciplina = input('Deseja sair? s/n')
-    arquivoDiciplinas.close()                                             
+    return(nomeDasdiciplinas, DadosDasDiciplinas)                                           
 
-def editarDiciplinas(nomeProfessor, listasEdicoes = []):
-    if input('Deseja listar suas diciplinas? s/n ') == 's':
-        print(listarDiciplinas(nomeProfessor))
-    nomeDiciplina = input('Digite o nome da diciplina que deseja editar: ')
-    diciplinaExiste = False #variavel auxiliar para o for 
-    DadosDiciplina = ''
-    try:
-        arquivo = open(f'diciplinas{nomeProfessor}.txt','r')
-        leitura = arquivo.read()
-        for linha in leitura.split('\n'):
-            if nomeDiciplina == linha.split(',')[0]:
+def editarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas, listasEdicoes = []):
+    while True:
+        print(DadosDasDiciplinas)
+        if input('Deseja listar suas diciplinas? s/n ') == 's':
+            print(listarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas))
+        nomeDiciplina = input('Digite o nome da diciplina que deseja editar: ')
+        diciplinaExiste = False #variavel auxiliar para o for 
+        DadosDiciplina = ''
+        try:
+            if nomeDiciplina in nomeDasdiciplinas:
                 diciplinaExiste = True
                 #indicar as próximas variaveis será importante mais apra a frente para reescrever as linhas de codigo
-                novoCodigo = linha.split(',')[1]
-                novoAno = linha.split(',')[2]
-                novoSemestre = linha.split(',')[3]
+                for nome in DadosDasDiciplinas:
+                    if nome.split(',')[0] == nomeDiciplina:
+                        novoCodigo = nome.split(',')[1]
+                        novoAno = nome.split(',')[2]
+                        novoSemestre = nome.split(',')[3]
                 DadosDiciplina = f'Nome: {nomeDiciplina} \nCódigo: {novoCodigo} \nAno:{novoAno} \nSemestre: {novoSemestre}'
-        arquivo.close()
-        if diciplinaExiste ==True:
-            while True:
-                print(f'Nome: {nomeDiciplina} \nCódigo: {novoCodigo} \nAno:{novoAno} \nSemestre: {novoSemestre}')
-                print('1-Editar código \n2-Editar ano \n3-Editar período \n4-apagar diciplina \n5-Sair')
-                resposta = input('Digite o número desejado: ')
-                if resposta == '1':
-                    novoCodigo = input('Digite o novo código desejado: ')
-                if resposta == '2':
-                    novoAno = input('Digite o novo ano desejado: ')
-                if resposta == '3':
-                    novoSemestre = input('Digite o novo semestre desejado: ')
-                if resposta == '4':
-                    apagarDiciplina(nomeProfessor, nomeDiciplina)
-                    break
-                if resposta == '5':
-                    novaLinha = [f'{nomeDiciplina},{novoCodigo},{novoAno},{novoSemestre}']
-                    listasEdicoes += novaLinha
-                    break
-    except FileNotFoundError:
-        with open(f'diciplinas{nomeProfessor}.txt', 'w'):
-            print('Você não possui nenhuma diciplina cadastrada.')
-            print('Voltando para o menu.')
-            return
-    if diciplinaExiste == False:
-        print('Diciplina não encontrada')
-    if input('Deseja editar outra diciplina? s/n ') != 'n':
-        
-        editarDiciplinas(nomeProfessor, listasEdicoes)
-    else:
+
+            if diciplinaExiste ==True:
+                while True:
+                    print(f'Nome: {nomeDiciplina} \nCódigo: {novoCodigo} \nAno:{novoAno} \nSemestre: {novoSemestre}')
+                    print('1-Editar código \n2-Editar ano \n3-Editar período \n4-apagar diciplina \n5-Sair')
+                    resposta = input('Digite o número desejado: ')
+                    if resposta == '1':
+                        novoCodigo = input('Digite o novo código desejado: ')
+                    if resposta == '2':
+                        novoAno = input('Digite o novo ano desejado: ')
+                    if resposta == '3':
+                        novoSemestre = input('Digite o novo semestre desejado: ')
+                    if resposta == '4':
+                        nomeDasdiciplinas, DadosDasDiciplinas = apagarDiciplina(nomeProfessor, nomeDiciplina, nomeDasdiciplinas, DadosDasDiciplinas)
+                        break
+                    if resposta == '5':
+                        novaLinha = [f'{nomeDiciplina},{novoCodigo},{novoAno},{novoSemestre}']
+                        listasEdicoes += novaLinha
+                        break
+        except FileNotFoundError:
+            with open(f'diciplinas{nomeProfessor}.txt', 'w'):
+                print('Você não possui nenhuma diciplina cadastrada.')
+                print('Voltando para o menu.')
+                return
+        if diciplinaExiste == False:
+            print('Diciplina não encontrada')
         #adicionar as edições
         print(listasEdicoes) #tirar depois
-        arquivo = open(f'diciplinas{nomeProfessor}.txt', 'r')
-        leitura = arquivo.read()
-        novoArquivo = ''
+        novoArquivo = ()
         nomesEdicoes = []
+        novoNomesDasDiciplinas = ()
         for nomes in listasEdicoes:
             nomesEdicoes += [nomes.split(',')[0]]
-
+        for nome in nomeDasdiciplinas:
+            if nomeDasdiciplinas == nomeDiciplina:
+                pass
+            else:
+                novoNomesDasDiciplinas += (nome,)
         for linhas in listasEdicoes:
             print(linhas) #tirar depois
-            for linha in leitura.split('\n'):
+            for linha in DadosDasDiciplinas:
                 if linhas.split(',')[0] == linha.split(',')[0]:
-                    novoArquivo = novoArquivo
+                    pass
                 else:
-                    if linha.split(',')[0] not in novoArquivo and linha.split(',')[0] not in nomesEdicoes:
-                        novoArquivo += f'{linha}\n'
-            novoArquivo += f'{linhas}\n'
-        
-        
-        arquivo.close()
-        arquivo = open(f'diciplinas{nomeProfessor}.txt', 'w')
-        arquivo.write(novoArquivo)
+                    if linha not in novoArquivo and linha.split(',')[0] not in nomesEdicoes and linha != '':
+                        novoArquivo += (linha,)
+            novoArquivo += (linhas,)
+        nomeDasdiciplinas = novoNomesDasDiciplinas
+        DadosDasDiciplinas = novoArquivo
         print('arquivo editado com sucesso!')
-        return
+        print(nomeDasdiciplinas)
+        print(DadosDasDiciplinas)
+        if input('Deseja editar outra diciplina? s/n ') != 'n':  
+            pass
+        else:
+            break
+    return nomeDasdiciplinas, DadosDasDiciplinas
 
-def apagarDiciplina(nomeProfessor, nomeDiciplina):
-    arquivo = open(f'diciplinas{nomeProfessor}.txt', 'r')
-    leitura = arquivo.read()
-    novoArquivo = ''
-    for linha in leitura.split('\n'):
+def apagarDiciplina(nomeProfessor, nomeDiciplina, nomeDasdiciplinas, DadosDasDiciplinas):
+    novoArquivo = ()
+    novoNomesDasDiciplinas = ()
+    for linha in DadosDasDiciplinas:
         if nomeDiciplina == linha.split(',')[0]:
             novoArquivo = novoArquivo
         else:
-            novoArquivo += f'{linha}\n'
-    arquivo.close()
-    arquivo = open(f'diciplinas{nomeProfessor}.txt', 'w')
-    arquivo.write(novoArquivo)
+            novoArquivo += (linha,)
+    for nome in nomeDasdiciplinas:
+        if nomeDasdiciplinas == nomeDiciplina:
+            pass
+        else:
+            novoNomesDasDiciplinas += (nome,)
+    nomeDasdiciplinas = novoNomesDasDiciplinas
+    DadosDasDiciplinas = novoArquivo
     print('arquivo editado com sucesso!')
-    return
+    return nomeDasdiciplinas, DadosDasDiciplinas
     
-def listarDiciplinas(nomeProfessor):
-    try:
-        arquivo = open(f'diciplinas{nomeProfessor}.txt','r')
-        leitura = arquivo.read()
-        diciplinas = ''
-        for linha in leitura.split('\n'):
-            if f'{linha.split(',')[0]}' == '':
-                pass
-            else:
-                diciplinas += f'{linha.split(',')[0]}, '
-        arquivo.close()
-        return diciplinas                   
-    except FileNotFoundError:
-        open(f'diciplinas{nomeProfessor}.txt', 'w')
+def listarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas):
+    diciplinas = ''
+    for ArquivoDasDiciplinas in nomeDasdiciplinas:
+        diciplinas += ArquivoDasDiciplinas + ' '
+    return diciplinas
     
 
 
@@ -245,11 +247,13 @@ def mainProf(professor, path):
     os.chdir(f'{path}/Trabalho/diciplinas')
     #caso possua a caracteristica de admin ele é considerado professor
     print(f'Bem vindo {professor}')
+    nomeDasDiciplinas, DadosDasDiciplinas = memoriaDiciplina(professor)
+    print(nomeDasDiciplinas, DadosDasDiciplinas)
     while True:
         menuProf()
         resposta = input('Digite o número desejado')
         if resposta == '1':
-            menuDiciplina(professor)
+            menuDiciplina(professor, nomeDasDiciplinas, DadosDasDiciplinas)
             pass
         if resposta == '4':
             login()
@@ -264,6 +268,19 @@ def caminhoPastas():
     except FileExistsError:
         pass
     return path
+def memoriaDiciplina(nomeProfessor):
+    nomesDasDiciplinas = ()
+    DadosDasDiciplinas = ()
+    try:
+        arquivo = open(f'diciplinas{nomeProfessor}.txt', 'r')
+        leitura = arquivo.read()
+        for linha in leitura.split('\n'):
+            nomesDasDiciplinas+= (str(linha.split(',')[0]),)
+            DadosDasDiciplinas += (str(linha),)
+        return nomesDasDiciplinas, DadosDasDiciplinas
+    except FileNotFoundError:
+        with open(f'diciplinas{nomeProfessor}.txt', 'w'):
+            pass
 
 def Start():
     path = caminhoPastas()
