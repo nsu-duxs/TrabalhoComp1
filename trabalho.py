@@ -27,6 +27,7 @@ def login(path = str(os.getcwd())):
                                 contaExiste = True
                                 mainProf(nome, path)
                                 #depois que o professor terminar o arquivo vai fechar
+                                print('passou por aqui')
                                 arquivoLogin.close()
                             else:
                                 print('senha incorreta.')
@@ -86,7 +87,7 @@ def login(path = str(os.getcwd())):
         
 
 
-def menuDiciplina(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas):
+def menuDiciplina(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas, DadosDasTurmas,path):
     while True:
         criarDiciplina = 'n'
         print('1- Criar diciplina')
@@ -100,18 +101,98 @@ def menuDiciplina(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas):
         if resposta == '2':
             nomeDasdiciplinas, DadosDasDiciplinas = editarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas, [])
         if resposta == '3':
-            #CriarTurmas(nomeProfessor, nomeDasdiciplinas)
-            pass
+            DadosDasTurmas = CriarTurmas(nomeProfessor, nomeDasdiciplinas, DadosDasTurmas)
         if resposta == '5':
-            salvarArquivosDiciplinas(nomeProfessor, DadosDasDiciplinas)
+            salvarArquivosDiciplinas(nomeProfessor, DadosDasDiciplinas,path)
+            salvarArquivosTurmas(nomeProfessor, DadosDasTurmas, path)
             break
-def salvarArquivosDiciplinas(nomeProfessor, DadosDasDiciplinas):
+
+
+def salvarArquivosDiciplinas(nomeProfessor, DadosDasDiciplinas,path):
+    os.chdir(f'{path}/Trabalho/diciplinas')
     arquivo = open(f'diciplinas{nomeProfessor}.txt', 'w')
     for linha in DadosDasDiciplinas:
-        arquivo.write(linha + '\n')        
-#def CriarTurmas(nomeProfessor, nomeDasdiciplinas):
-    
-        
+        arquivo.write(linha + '\n')
+    arquivo.close() 
+
+
+def salvarArquivosTurmas(nomeProfessor, DadosDasTurmas, path):
+    os.chdir(f'{path}/Trabalho/turmas')
+    arquivo = open('turma.txt', 'w')
+    for linha in DadosDasTurmas:
+        arquivo.write(linha + '\n')
+    arquivo.close()
+
+
+def CriarTurmas(nomeProfessor, nomeDasdiciplinas,DadosDasTurmas):
+    while True:
+        diciplina = input('Digite o nome da diciplina: ')
+        if diciplina in nomeDasdiciplinas:
+            nomeTurma = input('Digite o nome da turma que deseja criar: ')
+            codigoTurma = input('Digite o codigo da Turma: ')
+            while True:
+                horarioTurma = input('Digite o horario que a turma será oferecida no estilo HH:MM: ')
+                if verificarHora(horarioTurma) == True:
+                    break
+            while True:
+                formaAvaliacaoTurma = input('Digite o método de avaliação, digite no estilo p1+p2+p3...pn: ')
+                if verificarMetodoAvaliacao(formaAvaliacaoTurma) == True:
+                    break
+            DadosDasTurmas += (nomeProfessor+ ',' + diciplina + ',' + nomeTurma + ',' + codigoTurma + ',' + horarioTurma + ',' + formaAvaliacaoTurma+ '\n',)
+            if input('Deseja criar outra turma? s/n ') != 'n':
+                pass
+            else:
+                break
+        else:
+            print('Diciplina não encontrada!')
+            if input('deseja sair? s/n') != 'n':
+                break
+    return DadosDasTurmas
+
+def verificarHora(horario):
+    try: 
+        Hora = False
+        Minuto = False
+        if int(horario.split(':')[0]) >= 0 and int(horario.split(':')[0]) <= 24:
+            Hora = True
+        if int(horario.split(':')[1]) >= 0 and int(horario.split(':')[1]) <= 60:
+            Minuto = True
+        if Hora ==True and Minuto == True:
+            return True
+        else:
+            print('O valor inserido está no formato incorreto')
+            return False
+    except ValueError:
+        print('O valor inserido está no formato incorreto')
+        return False
+
+def verificarMetodoAvaliacao(formaAvaliacaoTurma):
+    try: 
+        PCorreto = False
+        NCorreto = False
+        for avaliacoes in formaAvaliacaoTurma.split('+'):
+            if len(avaliacoes) == 2:
+                if avaliacoes[0] == 'p':
+                    PCorreto = True
+                else: 
+                    print('erro p')
+                    return False
+                try:
+                    if type(int(avaliacoes[1])) == int:
+                        NCorreto = True
+                    else:
+                        print('erro numero')
+                        return False
+                except ValueError:
+                    return False    
+            else:
+                print('erro len')
+                return False
+        return True
+
+    except ValueError:
+        print('Digite no formato desejado p1+p2+p3...+pn')
+        return False
 
 def CriarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas):
     auxCriarDiciplina = 'n'
@@ -185,32 +266,35 @@ def editarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas, lista
                 return
         if diciplinaExiste == False:
             print('Diciplina não encontrada')
+        else:
+            break
         #adicionar as edições
         print(listasEdicoes) #tirar depois
         novoArquivo = ()
         nomesEdicoes = []
         novoNomesDasDiciplinas = ()
-        for nomes in listasEdicoes:
-            nomesEdicoes += [nomes.split(',')[0]]
-        for nome in nomeDasdiciplinas:
-            if nomeDasdiciplinas == nomeDiciplina:
-                pass
-            else:
-                novoNomesDasDiciplinas += (nome,)
-        for linhas in listasEdicoes:
-            print(linhas) #tirar depois
-            for linha in DadosDasDiciplinas:
-                if linhas.split(',')[0] == linha.split(',')[0]:
+        if listasEdicoes != []:
+            for nomes in listasEdicoes:
+                nomesEdicoes += [nomes.split(',')[0]]
+            for nome in nomeDasdiciplinas:
+                if nomeDasdiciplinas == nomeDiciplina:
                     pass
                 else:
-                    if linha not in novoArquivo and linha.split(',')[0] not in nomesEdicoes and linha != '':
-                        novoArquivo += (linha,)
-            novoArquivo += (linhas,)
-        nomeDasdiciplinas = novoNomesDasDiciplinas
-        DadosDasDiciplinas = novoArquivo
-        print('arquivo editado com sucesso!')
-        print(nomeDasdiciplinas)
-        print(DadosDasDiciplinas)
+                    novoNomesDasDiciplinas += (nome,)
+            for linhas in listasEdicoes:
+                print(linhas) #tirar depois
+                for linha in DadosDasDiciplinas:
+                    if linhas.split(',')[0] == linha.split(',')[0]:
+                        pass
+                    else:
+                        if linha not in novoArquivo and linha.split(',')[0] not in nomesEdicoes and linha != '':
+                            novoArquivo += (linha,)
+                novoArquivo += (linhas,)
+            nomeDasdiciplinas = novoNomesDasDiciplinas
+            DadosDasDiciplinas = novoArquivo
+            print('arquivo editado com sucesso!')
+            print(nomeDasdiciplinas)
+            print(DadosDasDiciplinas)
         if input('Deseja editar outra diciplina? s/n ') != 'n':  
             pass
         else:
@@ -244,16 +328,17 @@ def listarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas):
 
 
 def mainProf(professor, path):
+    DadosDasTurmas = memoriaTurma(professor, path)
     os.chdir(f'{path}/Trabalho/diciplinas')
     #caso possua a caracteristica de admin ele é considerado professor
     print(f'Bem vindo {professor}')
-    nomeDasDiciplinas, DadosDasDiciplinas = memoriaDiciplina(professor)
+    nomeDasDiciplinas, DadosDasDiciplinas = memoriaDiciplina(professor, path)
     print(nomeDasDiciplinas, DadosDasDiciplinas)
     while True:
         menuProf()
         resposta = input('Digite o número desejado')
         if resposta == '1':
-            menuDiciplina(professor, nomeDasDiciplinas, DadosDasDiciplinas)
+            menuDiciplina(professor, nomeDasDiciplinas, DadosDasDiciplinas, DadosDasTurmas, path)
             pass
         if resposta == '4':
             login()
@@ -261,14 +346,33 @@ def mainProf(professor, path):
 def caminhoPastas():
     path = str(os.getcwd())
     try:
-        
+        os.makedirs(f'{path}/Trabalho/turmas')
         os.makedirs(f'{path}/Trabalho')
         os.makedirs(f'{path}/Trabalho/login')
         os.makedirs(f'{path}/Trabalho/diciplinas')
     except FileExistsError:
         pass
     return path
-def memoriaDiciplina(nomeProfessor):
+
+
+
+def memoriaTurma(nomeProfessor, path):
+    DadosDasTurmas = ()
+    os.chdir(f'{path}/Trabalho/turmas')
+    try:
+        arquivo = open('turmas.txt','r')
+        leitura = arquivo.read()
+        for linha in leitura.split('\n'):
+            DadosDasTurmas += (str(linha),)
+            return DadosDasTurmas
+    except FileNotFoundError:
+        with open('turma.txt','w'):
+            return DadosDasTurmas
+        
+
+
+def memoriaDiciplina(nomeProfessor, path):
+    os.chdir(f'{path}/Trabalho/diciplinas')
     nomesDasDiciplinas = ()
     DadosDasDiciplinas = ()
     try:
@@ -277,10 +381,11 @@ def memoriaDiciplina(nomeProfessor):
         for linha in leitura.split('\n'):
             nomesDasDiciplinas+= (str(linha.split(',')[0]),)
             DadosDasDiciplinas += (str(linha),)
+        arquivo.close()
         return nomesDasDiciplinas, DadosDasDiciplinas
     except FileNotFoundError:
         with open(f'diciplinas{nomeProfessor}.txt', 'w'):
-            pass
+            return nomesDasDiciplinas, DadosDasDiciplinas
 
 def Start():
     path = caminhoPastas()
