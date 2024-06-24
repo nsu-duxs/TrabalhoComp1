@@ -87,9 +87,10 @@ def login(path = str(os.getcwd())):
         
 
 
-def menuDiciplina(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas, DadosDasTurmas,path):
+def menuDiciplina(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas, DadosDasTurmas, NomeDasTurmas, path):
     while True:
         print(DadosDasDiciplinas) #apagar depois
+        print(DadosDasTurmas)#apagar depois
         criarDiciplina = 'n'
         print('1- Criar diciplina')
         print('2- editar diciplinas')
@@ -102,7 +103,9 @@ def menuDiciplina(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas, DadosDas
         if resposta == '2':
             nomeDasdiciplinas, DadosDasDiciplinas = editarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas, [])
         if resposta == '3':
-            DadosDasTurmas = CriarTurmas(nomeProfessor, nomeDasdiciplinas, DadosDasTurmas)
+            NomeDasTurmas, DadosDasTurmas = CriarTurmas(nomeProfessor, nomeDasdiciplinas, DadosDasTurmas, NomeDasTurmas)
+        if resposta == '4':
+            NomeDasTurmas, DadosDasTurmas = EditarTurmas(nomeProfessor, DadosDasTurmas, NomeDasTurmas, [])
         if resposta == '5':
             salvarArquivosDiciplinas(nomeProfessor, DadosDasDiciplinas,path)
             salvarArquivosTurmas(nomeProfessor, DadosDasTurmas, path)
@@ -122,29 +125,36 @@ def salvarArquivosTurmas(nomeProfessor, DadosDasTurmas, path):
     os.chdir(f'{path}/Trabalho/turmas')
     arquivo = open('turma.txt', 'w')
     for linha in DadosDasTurmas:
-        arquivo.write(linha + '\n')
+        if linha != '':
+            arquivo.write(linha + '\n')
     arquivo.close()
 
 
-def CriarTurmas(nomeProfessor, nomeDasdiciplinas,DadosDasTurmas):
+def CriarTurmas(nomeProfessor, nomeDasdiciplinas,DadosDasTurmas, NomeDasTurmas):
     while True:
         diciplina = input('Digite o nome da diciplina: ')
         if diciplina in nomeDasdiciplinas:
             nomeTurma = input('Digite o nome da turma que deseja criar: ')
-            codigoTurma = input('Digite o codigo da Turma: ')
-            while True:
-                horarioTurma = input('Digite o horario que a turma será oferecida no estilo HH:MM: ')
-                if verificarHora(horarioTurma) == True:
+            if nomeTurma in DadosDasTurmas:
+                print('Turma já existe')
+                if input('deseja sair? s/n') != 'n':
                     break
-            while True:
-                formaAvaliacaoTurma = input('Digite o método de avaliação, digite no estilo p1+p2+p3...pn: ')
-                if verificarMetodoAvaliacao(formaAvaliacaoTurma) == True:
-                    break
-            DadosDasTurmas += (nomeProfessor+ ',' + diciplina + ',' + nomeTurma + ',' + codigoTurma + ',' + horarioTurma + ',' + formaAvaliacaoTurma+ '\n',)
-            if input('Deseja criar outra turma? s/n ') != 'n':
-                pass
             else:
-                break
+                codigoTurma = input('Digite o codigo da Turma: ')
+                while True:
+                    horarioTurma = input('Digite o horario que a turma será oferecida no estilo HH:MM: ')
+                    if verificarHora(horarioTurma) == True:
+                        break
+                while True:
+                    formaAvaliacaoTurma = input('Digite o método de avaliação, digite no estilo p1+p2+p3...pn: ')
+                    if verificarMetodoAvaliacao(formaAvaliacaoTurma) == True:
+                        break
+                DadosDasTurmas += (nomeProfessor+ ',' + diciplina + ',' + nomeTurma + ',' + codigoTurma + ',' + horarioTurma + ',' + formaAvaliacaoTurma,)
+                NomeDasTurmas += (nomeTurma,)
+                if input('Deseja criar outra turma? s/n ') != 'n':
+                    pass
+                else:
+                    break
         else:
             print('Diciplina não encontrada!')
             if input('deseja sair? s/n') != 'n':
@@ -195,10 +205,81 @@ def verificarMetodoAvaliacao(formaAvaliacaoTurma):
     except ValueError:
         print('Digite no formato desejado p1+p2+p3...+pn')
         return False
-'''def EditarTurmas(nomeProfessor, DadosDasTurmas, listasEdicoes = []):
+    
+def EditarTurmas(nomeProfessor, DadosDasTurmas, NomeDasTurmas, listasEdicoes = []):
     while True:
+        TurmaExiste = False
         print(DadosDasTurmas)
-        codigoDiciplina = DadosDasTurmas'''
+        nomeTurma = input('Digite o nome da turma que você deseja editar: ')
+        if nomeTurma in NomeDasTurmas:
+            TurmaExiste = True
+            for nome in DadosDasTurmas:
+                if nome.split(',')[2] == nomeTurma:
+                    novaDiciplina = nome.split(',')[1]
+                    novoCodigo = nome.split(',')[3]
+                    novoHorario = nome.split(',')[4]
+                    novaAvaliacoes = nome.split(',')[5]
+        if TurmaExiste == True:
+            while True:  
+                print(f'Nome: {nomeTurma}\nCódigo: {novoCodigo}\nHorário:{novoHorario}\nModelo Avaliativo:{novaAvaliacoes}')        
+                print('Digite o número de acordo com o que você deseja editar: \n1-Código \n2-Horario \n3-Avaliações')
+                resposta = input('Digite o número desejado: ')
+                if resposta == '1':
+                    novoCodigo = input('Digite o novo código desejado: ')
+                if resposta == '2':
+                    while True:
+                        novoHorario = input('Digite o novo horário no modelo HH:MM : ')
+                        if verificarHora(novoHorario) == True:
+                            break
+                        else:
+                            print('Modelo escrito errado!')
+                if resposta == '3':
+                    while True:
+                        novaAvaliacoes = input('Digite o novo modelo de avaliações no modelo p1+p2+p3...pn: ')
+                        if verificarMetodoAvaliacao == True:
+                            break
+                        else:
+                            print('Modelo escrito errado!')
+                if resposta == '4':
+                    #apagar turma()
+                    pass
+                if resposta == '5':
+                    novaLinha = [f'{nomeProfessor},{novaDiciplina},{nomeTurma},{novoCodigo},{novoHorario},{novaAvaliacoes}']
+                    listasEdicoes += novaLinha
+                    break
+        if TurmaExiste == False:
+            print('Turma não encontrada!')
+        #adicionando as edições:
+        novoArquivo = ()
+        nomesEdicoes = []
+        novoNomesDasTurmas = ()
+        if listasEdicoes != []:
+            for nomes in listasEdicoes:
+                nomesEdicoes += [nomes.split(',')[2]]
+            for nome in NomeDasTurmas:
+                if NomeDasTurmas == nomeTurma:
+                    pass
+                else:
+                    novoNomesDasTurmas += (nome,)
+            for linhas in listasEdicoes:
+                for linha in DadosDasTurmas:
+                    if linhas.split(',')[2] == linha.split(',')[2]: #confere se os nomes são iguais
+                        pass
+                    else:
+                        if linha not in novoArquivo and linha.split(',')[2] not in nomesEdicoes and linha != '':
+                            novoArquivo += (linha,)
+                novoArquivo += (linhas,)
+            NomeDasTurmas = novoNomesDasTurmas
+            DadosDasTurmas = novoArquivo
+            print('Arquivo foi editado')
+            print(NomeDasTurmas)
+            print(DadosDasTurmas)
+        if input('Deseja editar outra turma? s/n ') != 'n':
+            pass
+        else:
+            break
+    return NomeDasTurmas, DadosDasTurmas   
+
 def CriarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas):
     auxCriarDiciplina = 'n'
     while auxCriarDiciplina == 'n':
@@ -209,10 +290,10 @@ def CriarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas):
                     break
             else:
                 print('Você deve adicionar um código e indicar o ano e o semestre em que esta diciplina está sendo cursada')
-                codigoDiciplina = input('Digite o código da diciplina')
+                codigoDiciplina = input('Digite o código da diciplina: ')
                 while True:
-                    anoDiciplina = input('Digite o ano em que a diciplina está sendo cursada')
-                    semestreDiciplina = input('Digite o semestre em que a diciplina esta sendo cursada')
+                    anoDiciplina = input('Digite o ano em que a diciplina está sendo cursada: ')
+                    semestreDiciplina = input('Digite o semestre em que a diciplina esta sendo cursada: ')
                     try:
                         int(anoDiciplina)#só conferir se é um valor inteiro
                         int(semestreDiciplina)
@@ -222,13 +303,13 @@ def CriarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas):
                     except ValueError:
                         print('O valor do ano e do semestre deve ser um número inteiro digite novamente')
                 while True:
-                    horariosDiciplinas = input('Digite os horários em que a diciplina está sendo cursada no modelo HH:MM')
+                    horariosDiciplinas = input('Digite os horários em que a diciplina está sendo cursada no modelo HH:MM ')
                     if verificarHora(horariosDiciplinas) == True:
                         break
                     else:
                         print('O horario digitado está no modelo errado, digite no modelo HH:MM!')
                 nomeDasdiciplinas += (nomeDiciplina,)
-                DadosDasDiciplinas +=(nomeDiciplina + ',' + codigoDiciplina + ',' + anoDiciplina + ',' + semestreDiciplina + ',' + horariosDiciplinas + '\n',)
+                DadosDasDiciplinas +=(nomeDiciplina + ',' + codigoDiciplina + ',' + anoDiciplina + ',' + semestreDiciplina + ',' + horariosDiciplinas,)
                 print('Diciplina criada com sucesso')
                 auxCriarDiciplina = input('Deseja sair? s/n')
     return(nomeDasdiciplinas, DadosDasDiciplinas)                                           
@@ -303,7 +384,7 @@ def editarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas, lista
             for linhas in listasEdicoes:
                 print(linhas) #tirar depois
                 for linha in DadosDasDiciplinas:
-                    if linhas.split(',')[0] == linha.split(',')[0]:
+                    if linhas.split(',')[0] == linha.split(',')[0]: #confere se os nomes são iguais
                         pass
                     else:
                         if linha not in novoArquivo and linha.split(',')[0] not in nomesEdicoes and linha != '':
@@ -351,13 +432,13 @@ def mainProf(professor, path):
     #caso possua a caracteristica de admin ele é considerado professor
     print(f'Bem vindo {professor}')
     nomeDasDiciplinas, DadosDasDiciplinas = memoriaDiciplina(professor, path)
+    NomeDasTurmas, DadosDasTurmas = memoriaTurma(professor, path)
     print(nomeDasDiciplinas, DadosDasDiciplinas)
     while True:
-        DadosDasTurmas = memoriaTurma(professor, path)
         menuProf()
         resposta = input('Digite o número desejado')
         if resposta == '1':
-            menuDiciplina(professor, nomeDasDiciplinas, DadosDasDiciplinas, DadosDasTurmas, path)
+            menuDiciplina(professor, nomeDasDiciplinas, DadosDasDiciplinas, DadosDasTurmas, NomeDasTurmas, path)
             pass
         if resposta == '4':
             login()
@@ -377,16 +458,18 @@ def caminhoPastas():
 
 def memoriaTurma(nomeProfessor, path):
     DadosDasTurmas = ()
+    NomeDasTurmas = ()
     os.chdir(f'{path}/Trabalho/turmas')
     try:
-        arquivo = open('turmas.txt','r')
+        arquivo = open('turma.txt','r')
         leitura = arquivo.read()
         for linha in leitura.split('\n'):
+            NomeDasTurmas += (str(linha.split(',')[2]),)
             DadosDasTurmas += (str(linha),)
-            return DadosDasTurmas
+            return NomeDasTurmas, DadosDasTurmas
     except FileNotFoundError:
         with open('turma.txt','w'):
-            return DadosDasTurmas
+            return NomeDasTurmas, DadosDasTurmas
         
 
 
