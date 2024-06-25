@@ -135,7 +135,7 @@ def CriarTurmas(nomeProfessor, nomeDasdiciplinas,DadosDasTurmas, NomeDasTurmas):
         diciplina = input('Digite o nome da diciplina: ')
         if diciplina in nomeDasdiciplinas:
             nomeTurma = input('Digite o nome da turma que deseja criar: ')
-            if nomeTurma in DadosDasTurmas:
+            if nomeTurma in NomeDasTurmas:
                 print('Turma já existe')
                 if input('deseja sair? s/n') != 'n':
                     break
@@ -149,7 +149,12 @@ def CriarTurmas(nomeProfessor, nomeDasdiciplinas,DadosDasTurmas, NomeDasTurmas):
                     formaAvaliacaoTurma = input('Digite o método de avaliação, digite no estilo p1+p2+p3...pn: ')
                     if verificarMetodoAvaliacao(formaAvaliacaoTurma) == True:
                         break
-                DadosDasTurmas += (nomeProfessor+ ',' + diciplina + ',' + nomeTurma + ',' + codigoTurma + ',' + horarioTurma + ',' + formaAvaliacaoTurma,)
+                while True:
+                    pesoAvaliacaoTurma = input('Digite os pesos das avaliações EX: se digitou p1+p2, agor digite 1+2(O peso da p2 é o dobro do peso da p1): ')
+                    if verificarPesos(formaAvaliacaoTurma, pesoAvaliacaoTurma) == True:
+                        break
+                    
+                DadosDasTurmas += (nomeProfessor+ ',' + diciplina + ',' + nomeTurma + ',' + codigoTurma + ',' + horarioTurma + ',' + formaAvaliacaoTurma + ',' + pesoAvaliacaoTurma,)
                 NomeDasTurmas += (nomeTurma,)
                 if input('Deseja criar outra turma? s/n ') != 'n':
                     pass
@@ -159,7 +164,7 @@ def CriarTurmas(nomeProfessor, nomeDasdiciplinas,DadosDasTurmas, NomeDasTurmas):
             print('Diciplina não encontrada!')
             if input('deseja sair? s/n') != 'n':
                 break
-    return DadosDasTurmas
+    return NomeDasTurmas, DadosDasTurmas
 
 def verificarHora(horario):
     try: 
@@ -206,6 +211,27 @@ def verificarMetodoAvaliacao(formaAvaliacaoTurma):
         print('Digite no formato desejado p1+p2+p3...+pn')
         return False
     
+def verificarPesos(FormaAvaliacaoTurma, PesoAvaliacaoTurma):
+    numeroProvas = 0
+    numeroPesos = 0
+    for n in FormaAvaliacaoTurma.split('+'):
+        numeroProvas += 1
+    try: 
+        for n in  PesoAvaliacaoTurma.split('+'):
+            numeroPesos +=1
+            if type(int(n)) == int:
+                pass
+            else:
+                raise ValueError
+    except ValueError:
+        print( 'Você deve digitar apenas numeros inteiros separados por <+>')
+        return False
+    if numeroPesos == numeroProvas and numeroProvas > 0 and numeroPesos > 0:
+        return True
+    else: 
+        print('O formato inserido está errado, digite números inteiros separados por <+> igual ao numero de avaliações')
+        return False
+
 def EditarTurmas(nomeProfessor, DadosDasTurmas, NomeDasTurmas, listasEdicoes = []):
     while True:
         TurmaExiste = False
@@ -219,10 +245,11 @@ def EditarTurmas(nomeProfessor, DadosDasTurmas, NomeDasTurmas, listasEdicoes = [
                     novoCodigo = nome.split(',')[3]
                     novoHorario = nome.split(',')[4]
                     novaAvaliacoes = nome.split(',')[5]
+                    novoPeso = nome.split(',')[6]
         if TurmaExiste == True:
             while True:  
                 print(f'Nome: {nomeTurma}\nCódigo: {novoCodigo}\nHorário:{novoHorario}\nModelo Avaliativo:{novaAvaliacoes}')        
-                print('Digite o número de acordo com o que você deseja editar: \n1-Código \n2-Horario \n3-Avaliações')
+                print('Digite o número de acordo com o que você deseja editar: \n1-Código \n2-Horario \n3-Avaliações e Pesos\n4-Apagar Turma\n7-Sair')
                 resposta = input('Digite o número desejado: ')
                 if resposta == '1':
                     novoCodigo = input('Digite o novo código desejado: ')
@@ -239,7 +266,11 @@ def EditarTurmas(nomeProfessor, DadosDasTurmas, NomeDasTurmas, listasEdicoes = [
                         if verificarMetodoAvaliacao == True:
                             break
                         else:
-                            print('Modelo escrito errado!')
+                            print('Modelo escrito errado!')                
+                    while True:
+                        novoPeso = input('Digite os novos pesos no mesmo modelo, separando por <+>')
+                        if verificarPesos(novaAvaliacoes, novoPeso) == True:
+                            break
                 if resposta == '4':
                     #apagar turma()
                     pass
@@ -431,10 +462,9 @@ def mainProf(professor, path):
     os.chdir(f'{path}/Trabalho/diciplinas')
     #caso possua a caracteristica de admin ele é considerado professor
     print(f'Bem vindo {professor}')
-    nomeDasDiciplinas, DadosDasDiciplinas = memoriaDiciplina(professor, path)
-    NomeDasTurmas, DadosDasTurmas = memoriaTurma(professor, path)
-    print(nomeDasDiciplinas, DadosDasDiciplinas)
     while True:
+        nomeDasDiciplinas, DadosDasDiciplinas = memoriaDiciplina(professor, path)
+        NomeDasTurmas, DadosDasTurmas = memoriaTurma(professor, path)
         menuProf()
         resposta = input('Digite o número desejado')
         if resposta == '1':
@@ -464,9 +494,12 @@ def memoriaTurma(nomeProfessor, path):
         arquivo = open('turma.txt','r')
         leitura = arquivo.read()
         for linha in leitura.split('\n'):
-            NomeDasTurmas += (str(linha.split(',')[2]),)
-            DadosDasTurmas += (str(linha),)
-            return NomeDasTurmas, DadosDasTurmas
+            try:
+                NomeDasTurmas += (str(linha.split(',')[2]),)
+                DadosDasTurmas += (str(linha),)
+            except:
+                pass
+        return NomeDasTurmas, DadosDasTurmas
     except FileNotFoundError:
         with open('turma.txt','w'):
             return NomeDasTurmas, DadosDasTurmas
