@@ -2,9 +2,8 @@ import hashlib
 import os
 def menuProf():
     print('1- Editar diciplina') #adicionar outro sub menu dps com editar codigo, nome, ano, turmas
-    print('2- Editar avaliações')
-    print('3- Editar aluno')
-    print('4- logout')
+    print('2- Editar aluno')
+    print('3- logout')
 #---------------------------------------LOGIN----------------------------------------------------------------------------
 def login(path = str(os.getcwd())):
     os.chdir(f'{path}/Trabalho/login')
@@ -131,6 +130,14 @@ def salvarArquivosTurmas(nomeProfessor, DadosDasTurmas, path):
     os.chdir(f'{path}/Trabalho/turmas')
     arquivo = open('turma.txt', 'w')
     for linha in DadosDasTurmas:
+        if linha != '':
+            arquivo.write(linha + '\n')
+    arquivo.close()
+
+def salvarArquivosAluno(DadosAlunos, path):
+    os.chdir(f'{path}/Trabalho/turmas/alunos')
+    arquivo = open('alunos.txt', 'w')
+    for linha in DadosAlunos:
         if linha != '':
             arquivo.write(linha + '\n')
     arquivo.close()
@@ -358,7 +365,6 @@ def editarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas, lista
             print(listarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas))
         nomeDiciplina = input('Digite o nome da diciplina que deseja editar: ')
         diciplinaExiste = False #variavel auxiliar para o for 
-        DadosDiciplina = ''
         try:
             if nomeDiciplina in nomeDasdiciplinas:
                 diciplinaExiste = True
@@ -478,9 +484,9 @@ def mainProf(professor, path):
         if resposta == '1':
             menuDiciplina(professor, nomeDasDiciplinas, DadosDasDiciplinas, DadosDasTurmas, NomeDasTurmas, path)
             pass
-        if resposta == '3':
+        if resposta == '2':
             MenuAlunos(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path)
-        if resposta == '4':
+        if resposta == '3':
             login()
 
 def caminhoPastas():
@@ -561,7 +567,7 @@ def memoriaAlunos(path):
         arquivo = open('alunos.txt', 'r')
         leitura = arquivo.read()
         for linha in leitura.split('\n'):
-            nomesAlunos += (linha.split(',')[0],)
+            nomesAlunos += (linha.split(';')[0],)
             DadosAlunos += (linha,)
         return nomesAlunos, DadosAlunos
     except FileNotFoundError:
@@ -571,50 +577,247 @@ def memoriaAlunos(path):
 def MenuAlunos(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path):
     while True:
         os.chdir(f'{path}/Trabalho/turmas/alunos')
-        print('1-Cadastrar Aluno em turma\n2-Adicionar notas\n3-Editar frequência\nSalvar e sair')
+        print('1-Cadastrar Aluno em turma\n2-Adicionar notas\n3-Editar frequência\n4-Salvar e sair')
         resposta = input('digite a função desejada: ')
         if resposta == '1':
-            CadastrarAluno(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path)
+            nomesAlunos, DadosAlunos = CadastrarAluno(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path, [])
+        if resposta == '2':
+            nomesAlunos, DadosAlunos = EditarNotas(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path, [])
+            pass
+        if resposta == '3':
+            nomesAlunos, DadosAlunos = EditarFrequencia(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path, [])
+        if resposta == '4':
+            salvarArquivosAluno(DadosAlunos, path)
+            break
 
 def CadastrarAluno(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path, listasEdicoes = []):
     if input('deseja listar seus alunos? s/n: ') == 's':
         print(nomesAlunos)
+        print(DadosAlunos)
     aluno_nome = input('digite o nome do aluno desejado: ').upper()
     if aluno_nome in nomesAlunos:
         for nome in DadosAlunos:
-            if aluno_nome == nome.split(',')[0]:        
-                novoNota = eval(nome.split(',')[1])
-                novoFrequencia = eval(nome.split(',')[2])
+            if aluno_nome == nome.split(';')[0]:        
+                novaNota = eval(nome.split(';')[1])
+                novoFrequencia = eval(nome.split(';')[2])
+        print(novaNota)
+        print(novoFrequencia)
         while True:
             turma = input('Digite o nome da turma desejada: ')
-            if turma.upper in NomeDasTurmas.upper:
-                novaNota = {}
+            if turma in NomeDasTurmas:
                 for nome in DadosAlunos:
-                    if aluno_nome == nome.split(',')[0]:
+                    if aluno_nome == nome.split(';')[0]:
                         novaNota[turma] = 0
-                novaLinha = [f'{aluno_nome.upper()},{novaNota},{novoFrequencia}']
-                if input('Deseja cadastrar outra turma? s/n ') == 's':
-                    pass
-                    
+                        novoFrequencia[turma] = 0
+                novaLinha = [f'{aluno_nome.upper()};{novaNota};{novoFrequencia}']
+                listasEdicoes += novaLinha  
+                break     
             else:
-                print('turma não encontrada!')
+                print('turma não encontrada!')         
+        #continuar
+        novoArquivo = ()
+        nomesEdicoes = []
+        novoNomeDosAlunos = ()
+        if listasEdicoes != []:
+            for nomes in listasEdicoes:
+                nomesEdicoes += [nomes.split(';')[0]]
+            for nome in nomesAlunos:
+                if nomesAlunos == aluno_nome:
+                    pass
+                else:
+                    novoNomeDosAlunos += (nome,)
+            for linhas in listasEdicoes:
+                for linha in DadosAlunos:
+                    if linhas.split(';')[0] == linha.split(';')[0]:
+                        pass
+                    else:
+                        if linha not in novoArquivo and linha.split(';')[0] not in nomesEdicoes and linha != '':
+                            novoArquivo+=(linha,)
+                novoArquivo +=(linhas,)
+            nomesAlunos = novoNomeDosAlunos
+            DadosAlunos = novoArquivo
+            print('arquivo editado!')
+            print(f"nomes alunos:  {nomesAlunos}")
+            print(f'Dados Alunos:  {DadosAlunos}')
+    else:
+        print('Aluno não encontrado, saindo..')
+    return nomesAlunos, DadosAlunos
 
+def IsInt(n):
+    try:
+        if type(int(n)) == int:
+            return True
+        else:
+            return False
+    except ValueError:
+        return False               
+
+def EditarFrequencia(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path, listasEdicoes = []):
+    if input('deseja listar seus alunos? s/n: ') == 's':
+        print(nomesAlunos)
+        print(DadosAlunos)
+    aluno_nome = input('digite o nome do aluno desejado: ').upper()
+    if aluno_nome in nomesAlunos:
+        for nome in DadosAlunos:
+            if aluno_nome == nome.split(';')[0]:        
+                novaNota = eval(nome.split(';')[1])
+                novoFrequencia = eval(nome.split(';')[2])
+        while True:
+            turma = input('Digite o nome da turma desejada: ')
+            if turma in NomeDasTurmas and turma in novoFrequencia:
+                while True:
+                    frequencia = input('Digite a frequencia do aluno: ')#ainda tem que conferir se é INT
+                    if IsInt(frequencia) == True:
+                        break
+                    else:
+                        pass
+                for nome in DadosAlunos:
+                    if aluno_nome == nome.split(';')[0]:
+                        novoFrequencia[turma] = int(frequencia)
+                novaLinha = [f'{aluno_nome.upper()};{novaNota};{novoFrequencia}']
+                listasEdicoes += novaLinha
+                break     
+            else:
+                print('turma não encontrada ou o aluno não está cadastrado nela!')
+                if input('Deseja continuar? s/n: ') == 'n':
+                    break
+        #continuar
+        novoArquivo = ()
+        nomesEdicoes = []
+        novoNomeDosAlunos = ()
+        if listasEdicoes != []:
+            for nomes in listasEdicoes:
+                nomesEdicoes += [nomes.split(';')[0]]
+            for nome in nomesAlunos:
+                if nomesAlunos == aluno_nome:
+                    pass
+                else:
+                    novoNomeDosAlunos += (nome,)
+            for linhas in listasEdicoes:
+                for linha in DadosAlunos:
+                    if linhas.split(';')[0] == linha.split(';')[0]:
+                        pass
+                    else:
+                        if linha not in novoArquivo and linha.split(';')[0] not in nomesEdicoes and linha != '':
+                            novoArquivo+=(linha,)
+                novoArquivo +=(linhas,)
+            nomesAlunos = novoNomeDosAlunos
+            DadosAlunos = novoArquivo
+            print(f"nomes alunos:  {nomesAlunos}")
+            print(f'Dados Alunos:  {DadosAlunos}')
+    return nomesAlunos, DadosAlunos
+
+
+def EditarNotas(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path, listasEdicoes = []):
+    if input('deseja listar seus alunos? s/n: ') == 's':
+        print(nomesAlunos)
+        print(DadosAlunos)
+    aluno_nome = input('digite o nome do aluno desejado: ').upper()
+    if aluno_nome in nomesAlunos:
+        for nome in DadosAlunos:
+            if aluno_nome == nome.split(';')[0]:        
+                novaNota = eval(nome.split(';')[1])
+                novoFrequencia = eval(nome.split(';')[2])
+        while True:
+            turma = input('Digite o nome da turma desejada: ')
+            if turma in NomeDasTurmas and turma in novaNota:
+                while True:
+                    notas = input('Digite as novas notas do aluno separadas por <+>: ')
+                    AuxiliarDaVerificao, notas = verificarNota(DadosDasTurmas, turma, notas)
+                    print(notas)
+                    if AuxiliarDaVerificao == True:
+                        break
+                    else:
+                        print('Os numeros inseridos devem ser inteiros e separados com <+> na mesma quantidade de provas, se você deseja inserir apenas 1 das notas coloque as restantes como 0')
                 
-
-
+                for nome in DadosAlunos:
+                    if aluno_nome == nome.split(';')[0]:
+                        novaNota[turma] = notas #nota Com peso
+                novaLinha = [f'{aluno_nome.upper()};{novaNota};{novoFrequencia}']
+                listasEdicoes += novaLinha
+                break       
+            else:
+                print('turma não encontrada ou o aluno não está cadastrado nela!')
+                if input('Deseja continuar? s/n: ') == 'n':
+                    break
+        #continuar
+        print(listasEdicoes)
+        novoArquivo = ()
+        nomesEdicoes = []
+        novoNomeDosAlunos = ()
+        if listasEdicoes != []:
+            for nomes in listasEdicoes:
+                nomesEdicoes += [nomes.split(';')[0]]
+            for nome in nomesAlunos:
+                if nomesAlunos == aluno_nome:
+                    pass
+                else:
+                    novoNomeDosAlunos += (nome,)
+            for linhas in listasEdicoes:
+                for linha in DadosAlunos:
+                    if linhas.split(';')[0] == linha.split(';')[0]:
+                        pass
+                    else:
+                        if linha not in novoArquivo and linha.split(';')[0] not in nomesEdicoes and linha != '':
+                            novoArquivo+=(linha,)
+                novoArquivo +=(linhas,)
+            nomesAlunos = novoNomeDosAlunos
+            DadosAlunos = novoArquivo
+            print(f"nomes alunos:  {nomesAlunos}")
+            print(f'Dados Alunos:  {DadosAlunos}')
+    return nomesAlunos, DadosAlunos
 
 def adicionarAluno(nome, path):
     os.chdir(f'{path}/Trabalho/turmas/alunos')
     notas = {}
     frequencia = {}
     try:
-        arquivo = open('alunos.txt', 'r+')
-        leitura = arquivo.read
-        arquivo.write(nome+ f'{notas},{frequencia}')
+        arquivo = open('alunos.txt', 'a')
+        arquivo.write(nome+ f';{notas};{frequencia}'+'\n')
     except FileNotFoundError:
-        arquivo =  open('alunos.txt','w')
-        arquivo.write(nome+ f',{notas},{frequencia}')
+        arquivo = open('alunos.txt','w')
+        arquivo.write(nome+ f';{notas};{frequencia}'+'\n')
         arquivo.close()
+
+def verificarNota(DadosDasTurmas, turma, notas):
+    numeroProvas = 0
+    numeroNotas = 0
+    pesos = ''
+    listaPesos = []
+    listasNotas = []
+    notaFinal = 0
+    for nome in DadosDasTurmas:
+        if turma == nome.split(',')[2]:
+            for provas in nome.split(',')[5].split('+'):
+                numeroProvas +=1
+            pesos = nome.split(',')[6]
+    for x in pesos.split('+'):
+        listaPesos +=[int(x)]
+    for n in notas.split('+'):
+        numeroNotas +=1
+        try:
+            listasNotas += [float(n)]
+        except ValueError:
+            print('O numero inserido não é um inteiro')
+            return False, 0
+    if numeroNotas == numeroProvas:
+        notaFinal = 0
+        media = 0
+        for n in range(numeroNotas):
+            notaFinal += listaPesos[n] * listasNotas[n]
+            media += listaPesos[n]
+        Resposta = notaFinal/media
+        return True, Resposta
+    else:
+        print(f'Você deve digitar {numeroProvas} numeros separados por <+>')
+        return False, 0
+    
+    
+
+
+
+
+    
 
 #---------------------------------------START--------------------------------------------------------
 def Start():
@@ -622,3 +825,5 @@ def Start():
     login(path)
 
 Start()
+
+#------------------------------------AUXILIARES-----------------------------------------------------------
