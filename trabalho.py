@@ -5,14 +5,14 @@ def menuProf():
     print('2- Editar avaliações')
     print('3- Editar aluno')
     print('4- logout')
-
+#---------------------------------------LOGIN----------------------------------------------------------------------------
 def login(path = str(os.getcwd())):
     os.chdir(f'{path}/Trabalho/login')
     try:
         arquivoLogin = open('login.txt', 'r+')
         leitura = arquivoLogin.read()
         print('Digite: \n 1- Fazer login \n 2- Criar nova conta')
-        resposta = input('Digite:')
+        resposta = input('Digite: ')
         if resposta == '1':
             contaExiste = False #auxiliar para verificar se existe uma conta com o nome digitado
             while contaExiste == False:
@@ -25,7 +25,11 @@ def login(path = str(os.getcwd())):
                                 #aqui ele está logado
                                 print('Você esta logado!')
                                 contaExiste = True
-                                mainProf(nome, path)
+                                if linha.split(',')[2] == 'admin':
+                                    mainProf(nome, path)
+                                if linha.split(',')[2] == 'aluno':
+                                    #mainAluno()
+                                    pass
                                 #depois que o professor terminar o arquivo vai fechar
                                 print('passou por aqui')
                                 arquivoLogin.close()
@@ -52,7 +56,7 @@ def login(path = str(os.getcwd())):
                 nome = input('digite o nome desejado para a nova conta').upper()
                 for linha in leitura.split('\n'): #verifica se já existe uma conta com o mesmo nome
                         if nome == linha.split(',')[0]:
-                            print('Esse nome já está sendo usado faça login:')
+                            print('Esse nome já está sendo usado faça login ou crie uma conta com outro nome: ')
                             arquivoLogin.close()
                             login()
                 else:
@@ -66,7 +70,9 @@ def login(path = str(os.getcwd())):
                             if tipoDeConta == '1':
                                 arquivoLogin.write(hashlib.sha256(senha.encode()).hexdigest() + ',admin'+'\n')
                             elif tipoDeConta == '2':
-                                arquivoLogin.write(hashlib.sha256(senha.encode()).hexdigest() + '\n')
+                                arquivoLogin.write(hashlib.sha256(senha.encode()).hexdigest() +',aluno' + '\n')
+                                adicionarAluno(nome, path)
+
                             #Aqui escrevemos a senha de maneira "criptografada" e indicamos que é uma conta de professor com admin
                             print('Sua conta foi criada com sucesso!')
                             arquivoLogin.close()
@@ -85,7 +91,7 @@ def login(path = str(os.getcwd())):
         criarArquivo.close()
         login()
         
-
+#--------------------------------------------Diciplinas----------------------------------------------------------------------------------------------------
 
 def menuDiciplina(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas, DadosDasTurmas, NomeDasTurmas, path):
     while True:
@@ -465,11 +471,15 @@ def mainProf(professor, path):
     while True:
         nomeDasDiciplinas, DadosDasDiciplinas = memoriaDiciplina(professor, path)
         NomeDasTurmas, DadosDasTurmas = memoriaTurma(professor, path)
+        nomesAlunos, DadosAlunos = memoriaAlunos(path)
+        print(nomesAlunos, DadosAlunos)
         menuProf()
         resposta = input('Digite o número desejado')
         if resposta == '1':
             menuDiciplina(professor, nomeDasDiciplinas, DadosDasDiciplinas, DadosDasTurmas, NomeDasTurmas, path)
             pass
+        if resposta == '3':
+            MenuAlunos(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path)
         if resposta == '4':
             login()
 
@@ -478,6 +488,8 @@ def caminhoPastas():
     try:
         os.makedirs(f'{path}/Trabalho')
         os.makedirs(f'{path}/Trabalho/turmas')
+        os.makedirs(f'{path}/Trabalho/turmas/avaliacoes')
+        os.makedirs(f'{path}/Trabalho/turmas/alunos')
         os.makedirs(f'{path}/Trabalho/login')
         os.makedirs(f'{path}/Trabalho/diciplinas')
     except FileExistsError:
@@ -522,6 +534,89 @@ def memoriaDiciplina(nomeProfessor, path):
         with open(f'diciplinas{nomeProfessor}.txt', 'w'):
             return nomesDasDiciplinas, DadosDasDiciplinas
 
+#--------------------------------------AVALIAÇÕES-----------------------------------------------------
+def memoriaAvaliacoes(nomeProfessor, path):
+    os.chdir(f'{path}/Trabalho/turmas/avaliacoes')
+    calculoAvaliacao = ()
+    try:
+        arquivo = open('avaliacoes.txt', 'r')
+        leitura = arquivo.read()
+        for linha in leitura.split('\n'):
+            calculoAvaliacao += (str(linha),)
+        arquivo.close()
+        return calculoAvaliacao
+    except FileNotFoundError:
+        with open('avaliacoes.txt', 'w'):
+            return calculoAvaliacao
+        
+#def menuAvaliacoes(NomeProfessor, DadosDasTurmas, DadosAvaliações):
+    
+#---------------------------------------ALUNOS------------------------------------------------
+def memoriaAlunos(path):
+    os.chdir(f'{path}/Trabalho/turmas/alunos')
+    nomesAlunos = ()
+ #notas vao ser dadas nesse sentido = dict {nomeTurma:nota}
+    DadosAlunos = ()
+    try:
+        arquivo = open('alunos.txt', 'r')
+        leitura = arquivo.read()
+        for linha in leitura.split('\n'):
+            nomesAlunos += (linha.split(',')[0],)
+            DadosAlunos += (linha,)
+        return nomesAlunos, DadosAlunos
+    except FileNotFoundError:
+        with open('alunos.txt', 'w'):
+            return nomesAlunos, DadosAlunos
+#NomeAluno,{nomeTurma:nota, nomeTurma2:nota},{frequenciaTurma:int, frequenciaTurma2:int}
+def MenuAlunos(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path):
+    while True:
+        os.chdir(f'{path}/Trabalho/turmas/alunos')
+        print('1-Cadastrar Aluno em turma\n2-Adicionar notas\n3-Editar frequência\nSalvar e sair')
+        resposta = input('digite a função desejada: ')
+        if resposta == '1':
+            CadastrarAluno(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path)
+
+def CadastrarAluno(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path, listasEdicoes = []):
+    if input('deseja listar seus alunos? s/n: ') == 's':
+        print(nomesAlunos)
+    aluno_nome = input('digite o nome do aluno desejado: ').upper()
+    if aluno_nome in nomesAlunos:
+        for nome in DadosAlunos:
+            if aluno_nome == nome.split(',')[0]:        
+                novoNota = eval(nome.split(',')[1])
+                novoFrequencia = eval(nome.split(',')[2])
+        while True:
+            turma = input('Digite o nome da turma desejada: ')
+            if turma.upper in NomeDasTurmas.upper:
+                novaNota = {}
+                for nome in DadosAlunos:
+                    if aluno_nome == nome.split(',')[0]:
+                        novaNota[turma] = 0
+                novaLinha = [f'{aluno_nome.upper()},{novaNota},{novoFrequencia}']
+                if input('Deseja cadastrar outra turma? s/n ') == 's':
+                    pass
+                    
+            else:
+                print('turma não encontrada!')
+
+                
+
+
+
+def adicionarAluno(nome, path):
+    os.chdir(f'{path}/Trabalho/turmas/alunos')
+    notas = {}
+    frequencia = {}
+    try:
+        arquivo = open('alunos.txt', 'r+')
+        leitura = arquivo.read
+        arquivo.write(nome+ f'{notas},{frequencia}')
+    except FileNotFoundError:
+        arquivo =  open('alunos.txt','w')
+        arquivo.write(nome+ f',{notas},{frequencia}')
+        arquivo.close()
+
+#---------------------------------------START--------------------------------------------------------
 def Start():
     path = caminhoPastas()
     login(path)
