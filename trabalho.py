@@ -27,7 +27,7 @@ def login(path = str(os.getcwd())):
                                 if linha.split(',')[2] == 'admin':
                                     mainProf(nome, path)
                                 if linha.split(',')[2] == 'aluno':
-                                    #mainAluno()
+                                    mainAluno(nome, path)
                                     pass
                                 #depois que o professor terminar o arquivo vai fechar
                                 print('passou por aqui')
@@ -815,9 +815,26 @@ def verificarNota(DadosDasTurmas, turma, notas):
     
 
 
+def mainAluno(nome, path):
+    while True:
+        nomeAlunos, DadosAlunos = memoriaAlunos(path)
+        print('1-Ver notas\n 2-ver calculo\n 3-Ver frequencia \n 4-calculo aprovação')
+        resposta = input('Digite a opção desejada: ')
+        if resposta == '1':
+            mostrarNotas(nome, DadosAlunos)
+
+
+def mostrarNotas(nomeAluno, DadosAlunos):
+    for nome in DadosAlunos:
+        if nomeAluno == nome.split(';')[0]:
+            for turmas in nome.split(';')[1].split(','):
+                print(turmas.strip('{}').replace("'", "")) #remove os conchetes e os apostrofos para facilitar o codigo
+    
 
 
     
+
+
 
 #---------------------------------------START--------------------------------------------------------
 def Start():
@@ -826,4 +843,3 @@ def Start():
 
 Start()
 
-#------------------------------------AUXILIARES-----------------------------------------------------------
