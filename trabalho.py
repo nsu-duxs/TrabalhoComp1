@@ -476,7 +476,7 @@ def mainProf(professor, path):
     print(f'Bem vindo {professor}')
     while True:
         nomeDasDiciplinas, DadosDasDiciplinas = memoriaDiciplina(professor, path)
-        NomeDasTurmas, DadosDasTurmas = memoriaTurma(professor, path)
+        NomeDasTurmas, DadosDasTurmas = memoriaTurma(path)
         nomesAlunos, DadosAlunos = memoriaAlunos(path)
         print(nomesAlunos, DadosAlunos)
         menuProf()
@@ -504,7 +504,7 @@ def caminhoPastas():
 
 
 
-def memoriaTurma(nomeProfessor, path):
+def memoriaTurma(path):
     DadosDasTurmas = ()
     NomeDasTurmas = ()
     os.chdir(f'{path}/Trabalho/turmas')
@@ -818,16 +818,66 @@ def verificarNota(DadosDasTurmas, turma, notas):
 def mainAluno(nome, path):
     while True:
         nomeAlunos, DadosAlunos = memoriaAlunos(path)
+        nomeDasTurmas, DadosDasTurmas = memoriaTurma(path) 
         print('1-Ver notas\n 2-ver calculo\n 3-Ver frequencia \n 4-calculo aprovação')
         resposta = input('Digite a opção desejada: ')
         if resposta == '1':
             mostrarNotas(nome, DadosAlunos)
-
+        if resposta == '2':
+            CalculoProvas(nome, DadosAlunos, DadosDasTurmas)
+        if resposta == '3':
+            mostrarFrequencia(nome, DadosAlunos)
 
 def mostrarNotas(nomeAluno, DadosAlunos):
     for nome in DadosAlunos:
         if nomeAluno == nome.split(';')[0]:
             for turmas in nome.split(';')[1].split(','):
+                print(turmas.strip('{}').replace("'", "")) #remove os conchetes e os apostrofos para facilitar o codigo
+
+def CalculoProvas(nomeAlunos, DadosAlunos, DadosDasTurmas):
+    numProvas = 0
+    Provas = ''
+    Pesos = ''
+    listasPesos = []
+    listasProvas = []
+    listaturmas = []
+    media = 0
+    for nome in DadosAlunos:
+        if nomeAlunos == nome.split(';')[0]:
+            dicionarioTurmas = eval(nome.split(';')[1])
+            print('Essas São as suas turmas inscritas: ', end='')
+            listaturmas = list(dicionarioTurmas.keys())
+            print(list(dicionarioTurmas.keys()))
+    while True:
+        TurmasDesejada = input('Digite o nome da turma que deseja editar: ')
+        if TurmasDesejada in listaturmas:
+            break
+        else:
+            print('Esta turma não exite ou você não esté inscrito nela')
+    for notas in DadosDasTurmas:
+        if notas.split(',')[2] == TurmasDesejada:
+            Provas = notas.split(',')[5]
+            Pesos = notas.split(',')[6]
+    for p in Provas.split('+'):
+        numProvas +=1
+        listasProvas += [p]
+    for peso in Pesos.split('+'):
+        listasPesos += [int(peso)]
+        media += int(peso)
+    print(f'Esta turma é avaliada em {numProvas} para calcular sua nota é feito o seguinte calculo: ')
+    for peso in range(len(listasProvas)):
+        print(f'({listasProvas[peso]}*{listasPesos[peso]})',end='')
+        if peso != len(listasProvas)-1:
+            print('+', end='')
+    print(f'/{media}')
+    return 
+    
+
+
+def mostrarFrequencia(nomeAluno, DadosAlunos):
+    for nome in DadosAlunos:
+        if nomeAluno == nome.split(';')[0]:
+            for turmas in nome.split(';')[2].split(','):
                 print(turmas.strip('{}').replace("'", "")) #remove os conchetes e os apostrofos para facilitar o codigo
     
 
