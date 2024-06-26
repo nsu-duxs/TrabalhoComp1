@@ -827,6 +827,8 @@ def mainAluno(nome, path):
             CalculoProvas(nome, DadosAlunos, DadosDasTurmas)
         if resposta == '3':
             mostrarFrequencia(nome, DadosAlunos)
+        if resposta == '4':
+            calculoAprovação(nome, DadosAlunos)
 
 def mostrarNotas(nomeAluno, DadosAlunos):
     for nome in DadosAlunos:
@@ -849,7 +851,7 @@ def CalculoProvas(nomeAlunos, DadosAlunos, DadosDasTurmas):
             listaturmas = list(dicionarioTurmas.keys())
             print(list(dicionarioTurmas.keys()))
     while True:
-        TurmasDesejada = input('Digite o nome da turma que deseja editar: ')
+        TurmasDesejada = input('Digite o nome da turma que deseja visualizar: ')
         if TurmasDesejada in listaturmas:
             break
         else:
@@ -880,7 +882,24 @@ def mostrarFrequencia(nomeAluno, DadosAlunos):
             for turmas in nome.split(';')[2].split(','):
                 print(turmas.strip('{}').replace("'", "")) #remove os conchetes e os apostrofos para facilitar o codigo
     
-
+def calculoAprovação(nomeAlunos, DadosAlunos):
+    dicionarioNotas = {}
+    for nome in DadosAlunos:
+        if nomeAlunos == nome.split(';')[0]:
+            dicionarioNotas = eval(nome.split(';')[1])
+            print('Essas São as suas turmas inscritas: ', end='')
+            listaturmas = list(dicionarioNotas.keys())
+            print(list(dicionarioNotas.keys()))
+    while True:
+        TurmasDesejada = input('Digite o nome da turma que deseja visualizar: ')
+        if TurmasDesejada in listaturmas:
+            break
+        else:
+            print('Esta turma não exite ou você não esté inscrito nela')
+    if dicionarioNotas[TurmasDesejada] - 7 >=0:
+        print('você já esta aprovado!')
+    else:
+        print(f'você precisa de {7 - dicionarioNotas[TurmasDesejada]} para ser aprovado')
 
     
 
