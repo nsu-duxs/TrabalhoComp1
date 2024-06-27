@@ -293,6 +293,8 @@ def EditarTurmas(nomeProfessor, DadosDasTurmas, NomeDasTurmas, listasEdicoes = [
                     break
         if TurmaExiste == False:
             print('Turma não encontrada!')
+            if input('Deseja sair? s/n ') == 's':
+                break
         #adicionando as edições:
         novoArquivo = ()
         nomesEdicoes = []
@@ -376,7 +378,6 @@ def editarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas, lista
                         novoSemestre = nome.split(',')[3]
                         novoHorario = nome.split(',')[4]
                 DadosDiciplina = f'Nome: {nomeDiciplina} \nCódigo: {novoCodigo} \nAno:{novoAno} \nSemestre: {novoSemestre}'
-
             if diciplinaExiste ==True:
                 while True:
                     print(f'Nome: {nomeDiciplina} \nCódigo: {novoCodigo} \nAno:{novoAno} \nSemestre: {novoSemestre}\nHorarios: {novoHorario}')
@@ -409,35 +410,38 @@ def editarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas, lista
                 return
         if diciplinaExiste == False:
             print('Diciplina não encontrada')
+            if input('Deseja sair? s/n ') == 's':
+                break
+
         else:
-            break
-        #adicionar as edições
-        print(listasEdicoes) #tirar depois
-        novoArquivo = ()
-        nomesEdicoes = []
-        novoNomesDasDiciplinas = ()
-        if listasEdicoes != []:
-            for nomes in listasEdicoes:
-                nomesEdicoes += [nomes.split(',')[0]]
-            for nome in nomeDasdiciplinas:
-                if nomeDasdiciplinas == nomeDiciplina:
-                    pass
-                else:
-                    novoNomesDasDiciplinas += (nome,)
-            for linhas in listasEdicoes:
-                print(linhas) #tirar depois
-                for linha in DadosDasDiciplinas:
-                    if linhas.split(',')[0] == linha.split(',')[0]: #confere se os nomes são iguais
+            
+            #adicionar as edições
+            print(listasEdicoes) #tirar depois
+            novoArquivo = ()
+            nomesEdicoes = []
+            novoNomesDasDiciplinas = ()
+            if listasEdicoes != []:
+                for nomes in listasEdicoes:
+                    nomesEdicoes += [nomes.split(',')[0]]
+                for nome in nomeDasdiciplinas:
+                    if nomeDasdiciplinas == nomeDiciplina:
                         pass
                     else:
-                        if linha not in novoArquivo and linha.split(',')[0] not in nomesEdicoes and linha != '':
-                            novoArquivo += (linha,)
-                novoArquivo += (linhas,)
-            nomeDasdiciplinas = novoNomesDasDiciplinas
-            DadosDasDiciplinas = novoArquivo
-            print('arquivo editado com sucesso!')
-            print(nomeDasdiciplinas)
-            print(DadosDasDiciplinas)
+                        novoNomesDasDiciplinas += (nome,)
+                for linhas in listasEdicoes:
+                    print(linhas) #tirar depois
+                    for linha in DadosDasDiciplinas:
+                        if linhas.split(',')[0] == linha.split(',')[0]: #confere se os nomes são iguais
+                            pass
+                        else:
+                            if linha not in novoArquivo and linha.split(',')[0] not in nomesEdicoes and linha != '':
+                                novoArquivo += (linha,)
+                    novoArquivo += (linhas,)
+                nomeDasdiciplinas = novoNomesDasDiciplinas
+                DadosDasDiciplinas = novoArquivo
+                print('arquivo editado com sucesso!')
+                print(nomeDasdiciplinas)
+                print(DadosDasDiciplinas)
         if input('Deseja editar outra diciplina? s/n ') != 'n':  
             pass
         else:
@@ -459,7 +463,7 @@ def apagarDiciplina(nomeProfessor, nomeDiciplina, nomeDasdiciplinas, DadosDasDic
             novoNomesDasDiciplinas += (nome,)
     nomeDasdiciplinas = novoNomesDasDiciplinas
     DadosDasDiciplinas = novoArquivo
-    print('arquivo editado com sucesso!')
+    print('arquivo apagado com sucesso volte para salvar para completar esta ação!')
     return nomeDasdiciplinas, DadosDasDiciplinas
     
 def listarDiciplinas(nomeProfessor, nomeDasdiciplinas, DadosDasDiciplinas):
@@ -485,7 +489,10 @@ def mainProf(professor, path):
             menuDiciplina(professor, nomeDasDiciplinas, DadosDasDiciplinas, DadosDasTurmas, NomeDasTurmas, path)
             pass
         if resposta == '2':
-            MenuAlunos(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path)
+            if nomesAlunos != ('',):
+                MenuAlunos(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path)
+            else:
+                print('não existe nenhum aluno cadastrado na plataforma para editar')
         if resposta == '3':
             login()
 
@@ -574,6 +581,7 @@ def memoriaAlunos(path):
         with open('alunos.txt', 'w'):
             return nomesAlunos, DadosAlunos
 #NomeAluno,{nomeTurma:nota, nomeTurma2:nota},{frequenciaTurma:int, frequenciaTurma2:int}
+
 def MenuAlunos(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path):
     while True:
         os.chdir(f'{path}/Trabalho/turmas/alunos')
@@ -705,6 +713,8 @@ def EditarFrequencia(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, pa
             DadosAlunos = novoArquivo
             print(f"nomes alunos:  {nomesAlunos}")
             print(f'Dados Alunos:  {DadosAlunos}')
+    else:
+        print('aluno não encontrado, saindo')
     return nomesAlunos, DadosAlunos
 
 
@@ -765,6 +775,8 @@ def EditarNotas(DadosDasTurmas, NomeDasTurmas, nomesAlunos, DadosAlunos, path, l
             DadosAlunos = novoArquivo
             print(f"nomes alunos:  {nomesAlunos}")
             print(f'Dados Alunos:  {DadosAlunos}')
+    else:
+        print('Aluno não encontrado, saindo...')
     return nomesAlunos, DadosAlunos
 
 def adicionarAluno(nome, path):
@@ -911,4 +923,3 @@ def Start():
     login(path)
 
 Start()
-
